@@ -1,0 +1,154 @@
+# Implementation Plan - ShipSync (AI Courier Billing & Excel Automation)
+
+ShipSync is a premium AI-powered logistics SaaS application that automates courier billing, consignment segregation, and OCR-based parcel document extraction. It provides a stunning dashboard, a high-performance billing calculator, custom zone/weight slab managers, and powerful Excel export features.
+
+---
+
+## User Review Required
+
+We are designing this application with high premium standards, including dynamic glassmorphism, animated transitions (Framer Motion), charts (Recharts), and a unified project launcher. 
+
+> [!IMPORTANT]
+> **Database Strategy:** To enable a **zero-configuration local run** immediately, we will use **SQLite** as the default database for Prisma. Prisma makes it trivial to swap to **PostgreSQL** (just changing the provider in `schema.prisma` and updating the database URL in `.env`). We will provide full documentation and a PostgreSQL schema file for production deployment.
+>
+> **OCR Pipeline:** We will use **Tesseract.js** in the backend Node environment. Tesseract.js is a pure JavaScript OCR engine. It requires **no native binaries or complex Tesseract software installations on Windows**, which avoids permission and compatibility issues, and executes OCR flawlessly on your local PC.
+>
+> **Fuzzy Name Matching:** We will implement the Levenshtein distance algorithm combined with token sorting to accurately map variations like `"Alfred Pvt Ltd"`, `"ALFRED"`, and `"Alfred Company"` to a canonical company name.
+
+---
+
+## Proposed Folder Structure
+
+We will create a multi-package workspace with a root-level orchestrator. Running a single command (`npm run dev`) at the root will launch both the Express backend and the Next.js frontend simultaneously!
+
+```
+ShipSync/
+├── package.json               # Root orchestrator (scripts to run frontend & backend concurrently)
+├── backend/                   # Node.js + Express.js API Server
+│   ├── package.json
+│   ├── .env.example
+│   ├── src/
+│   │   ├── index.js           # Server Entrypoint
+│   │   ├── controllers/       # Auth, OCR, Excel, Billing, Dashboard controllers
+│   │   ├── routes/            # Express router setups
+│   │   ├── services/          # OCR Service, Excel Service, Fuzzy Matching Service
+│   │   ├── middleware/        # Auth middleware, File upload (Multer)
+│   │   └── utils/             # Math and Helper functions
+│   └── prisma/
+│       ├── schema.prisma      # Prisma schema file (configured for SQLite, easily switchable to Postgres)
+│       └── dev.db             # Local SQLite database
+├── frontend/                  # Next.js React Web App
+│   ├── package.json
+│   ├── tailwind.config.js     # Premium theme customizations (glassmorphism, dark/light colors)
+│   ├── src/
+│   │   ├── app/               # Next.js App Router (Layouts, Pages, Dashboard)
+│   │   ├── components/        # Elegant UI Components (Card, Charts, FileUploader, Table)
+│   │   ├── styles/            # CSS, Animations, custom tailwind styles
+│   │   └── utils/             # API clients, local storage helpers
+```
+
+---
+
+## Proposed Changes
+
+### 1. Root Orchestrator
+We will create a root `package.json` that relies on `concurrently` to run both the frontend and backend servers together.
+
+#### [NEW] [package.json](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/package.json)
+- Configures workspace run commands.
+- Includes `npm run install-all` to install all dependencies for both frontend and backend recursively.
+- Includes `npm run dev` to start both local servers concurrently.
+
+---
+
+### 2. Express Backend
+
+#### [NEW] [package.json](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/backend/package.json)
+- Installs `express`, `cors`, `dotenv`, `multer`, `tesseract.js`, `exceljs`, `xlsx`, `jsonwebtoken`, `bcryptjs`, `@prisma/client`.
+- Development dependency: `prisma`, `nodemon`.
+
+#### [NEW] [schema.prisma](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/backend/prisma/schema.prisma)
+- **Database Schema**:
+  - `User`: Admin/Employee login records.
+  - `Company`: Consolidated company listings with fuzzy name alias maps.
+  - `Consignment`: Main consignment data (Consignment Number, Company, Date, Destination, Weight, Parcel Details, calculated Amount, GST, Total, Status, isDuplicate, Upload ID).
+  - `UploadHistory`: Track master uploads and OCR uploads.
+  - `WeightSlab` & `ZoneRate`: Store dynamically customizable billing rules.
+
+#### [NEW] [fuzzyMatcher.js](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/backend/src/services/fuzzyMatcher.js)
+- Normalizes names by stripping suffixes (`Pvt Ltd`, `Co.`, `Company`, `Limited`).
+- Employs fuzzy matching (Levenshtein distance & Jaccard token index) to group variations.
+- Maintains a list of aliases mapped to main parent company names.
+
+#### [NEW] [excelService.js](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/backend/src/services/excelService.js)
+- Reads uploaded Master Excel via SheetJS (`xlsx`) or `exceljs`.
+- Separates entries by company.
+- Generates custom, stylized Excel sheets (using `exceljs` for borders, header colors, autofitted columns) for each company.
+- Wraps them in ZIP or serves direct download links.
+
+#### [NEW] [ocrService.js](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/backend/src/services/ocrService.js)
+- Feeds parcel slip images into Tesseract.js.
+- Extracts texts and applies regex pattern matching to parse:
+  - Consignment numbers (e.g., `CN-123456789`, `REF-xxxx`)
+  - Date (detects varied formats)
+  - Weight (extracts digits followed by `kg`, `g`, `lbs`)
+  - Destination/Pincodes
+  - Company Names
+- Returns structured JSON to the frontend.
+
+#### [NEW] [billingService.js](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/backend/src/services/billingService.js)
+- Reads active Weight Slabs and Destination Zones.
+- Calculates cost: `Base Price + Excess Weight Rate * Excess Slabs + Zone Surcharge`.
+- Adds 18% GST (or customized rate) automatically.
+- Computes final billing summary.
+
+---
+
+### 3. Next.js Frontend
+
+#### [NEW] [tailwind.config.js](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/frontend/tailwind.config.js)
+- Custom tailwind styling for an ultra-premium dark/light logistics theme.
+- Modern primary colors: Indigo/Cyan for logistics-tech vibe, emerald for revenue, amber for warnings.
+
+#### [NEW] [layout.jsx](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/frontend/src/app/layout.jsx) & [page.jsx](file:///c:/Users/sandh/OneDrive/Documents/exspenso/Desktop/ShipSync/frontend/src/app/page.jsx)
+- Glassmorphism header, active navigation sidebar.
+- Dark/Light mode theme provider.
+- Context managers for authentication.
+
+#### [NEW] Dashboard Component
+- Sleek stats row (Shipments, Revenue, GST, Upload Count).
+- Fully responsive visual charts using **Recharts** (Volume trends, Top shipping companies, Zone breakdown).
+- Drag-and-drop file uploader component with a modern animated dropzone.
+- Live active logs & Upload history with status indicators (Processing, Success, Error).
+
+#### [NEW] Company Segregator & Fuzzy Matching Control
+- Panel showing list of segmented companies.
+- Grid of cards, each showing company details, shipment counts, and direct action to download its generated Excel sheet.
+- Fuzzy matching interface showing suggested duplicate companies and allowing the user to merge/confirm groups.
+
+#### [NEW] OCR Scanner Tool
+- Modern upload panel specifically for parcel images.
+- Displays uploaded image and side-by-side OCR raw output + structured fields form.
+- Direct edit inputs allowing immediate correction and saving.
+
+#### [NEW] Billing & Rate Manager
+- Sleek interactive form to customize Weight Slabs (e.g., Local, Regional, National rates, extra weight increments).
+- Exports invoices and detailed billing summaries in Excel/PDF.
+
+---
+
+## Verification Plan
+
+### Automated & Manual Verification
+1. **Startup Check**: Confirm root-level `npm run dev` boots the Express server (port 5000) and the Next.js dev server (port 3000) concurrently.
+2. **Authentication Flow**: Verify credentials validation, tokens storing in LocalStorage/Cookies, and layout protection.
+3. **Master Excel Segregation**:
+   - Upload a sample master Excel with mixed company names (e.g., `Alfred`, `ALFRED Pvt Ltd`, `APZEM`, `apzem shipping`).
+   - Verify that they are fuzzy-merged correctly.
+   - Download the generated segregated files and confirm that they parse accurately in Excel with beautiful formatting.
+4. **OCR Check**:
+   - Upload sample parcel images.
+   - Check that consignment numbers, weights, and destinations are correctly extracted and editable.
+5. **Billing Calculation**:
+   - Add/edit weight slabs and zone rates.
+   - Run the automatic billing engine on uploaded data and verify that amounts, GST, and final totals add up perfectly.

@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary-50: #ecfdf5;
+  --color-primary-100: #d1fae5;
+  --color-primary-500: #10b981;
+  --color-primary-600: #059669;
+  --color-primary-700: #047857;
+  --color-primary-900: #064e3b;
+}
+
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0fdf4;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --border-color: #e2e8f0;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --glass-shadow: rgba(0, 0, 0, 0.05);
+  --glow-color: rgba(16, 185, 129, 0.15);
+  --primary-accent: #10b981;
+  --primary-hover: #059669;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #040810;
+  --bg-secondary: #0a0f1d;
+  --bg-tertiary: #0e172a;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: #1e293b;
+  --glass-bg: rgba(10, 15, 29, 0.7);
+  --glass-border: rgba(16, 185, 129, 0.15);
+  --glass-shadow: rgba(0, 0, 0, 0.5);
+  --glow-color: rgba(16, 185, 129, 0.25);
+  --primary-accent: #34d399;
+  --primary-hover: #10b981;
+}
+
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-accent);
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 var(--glass-shadow);
+}
+
+.glass-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px 0 var(--glow-color);
+  border-color: var(--primary-accent);
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* High Visibility Font Contrast Overrides for Legibility in Dark Mode */
+[data-theme="dark"] .text-slate-400 {
+  color: #cbd5e1 !important; /* Prominent Light Slate */
+}
+[data-theme="dark"] .text-slate-450 {
+  color: #e2e8f0 !important; /* High Contrast Slate */
+}
+[data-theme="dark"] .text-slate-500 {
+  color: #f1f5f9 !important; /* Ultra-Bright Slate */
+}
+[data-theme="dark"] .text-slate-600 {
+  color: #ffffff !important; /* Crystal White */
+}
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  color: #ffffff !important;
+  background-color: #0b0f19 !important;
+}
+[data-theme="dark"] select option {
+  background-color: #0b0f19 !important;
+  color: #ffffff !important;
+}
+
+/* Base text contrast scale */
+[data-theme="dark"] {
+  --text-secondary: #cbd5e1;
+}
+

@@ -1,0 +1,75 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      String   // "ADMIN" or "EMPLOYEE"
+  name      String
+  createdAt DateTime @default(now())
+}
+
+model Company {
+  id        String        @id @default(uuid())
+  name      String        @unique // Canonical name: e.g. "Alfred Pvt Ltd"
+  aliases   String        // Comma-separated list or JSON array of known similar names: "ALFRED, Alfred Co, Alfred"
+  createdAt DateTime      @default(now())
+  consignments Consignment[]
+}
+
+model Consignment {
+  id                String   @id @default(uuid())
+  consignmentNumber String
+  companyName       String   // Mapped canonical company name
+  rawCompanyName    String   // Original text from Excel or OCR
+  orderDate         String   // Parsed date format: YYYY-MM-DD or raw
+  destination       String   // City or Zone
+  weight            Float    // Weight in kg
+  parcelDetails     String?  // Description of parcels
+  baseAmount        Float    // Calculated base charge
+  gstAmount         Float    // Calculated GST charge
+  totalAmount       Float    // Calculated total amount
+  isDuplicate       Boolean  @default(false)
+  status            String   @default("DELIVERED") // "PENDING", "IN_TRANSIT", "DELIVERED"
+  uploadId          String?  // Link to UploadHistory
+  upload            UploadHistory? @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  companyId         String?
+  company           Company? @relation(fields: [companyId], references: [id])
+  createdAt         DateTime @default(now())
+}
+
+model UploadHistory {
+  id             String        @id @default(uuid())
+  filename       String
+  uploadType     String        // "MASTER_EXCEL" or "OCR_SLIP"
+  uploadedBy     String        // Username of the employee or admin
+  shipmentsCount Int
+  status         String        // "SUCCESS", "PROCESSING", "FAILED"
+  createdAt      DateTime      @default(now())
+  consignments   Consignment[]
+}
+
+model WeightSlab {
+  id              String   @id @default(uuid())
+  minWeight       Float    // in kg
+  maxWeight       Float    // in kg
+  baseRate        Float    // Base price within this slab
+  excessRatePerKg Float    // Excess weight cost per kg above maxWeight
+  zone            String   // "LOCAL", "REGIONAL", "NATIONAL"
+  createdAt       DateTime @default(now())
+}
+
+model ZoneRate {
+  id          String   @id @default(uuid())
+  zone        String   @unique // "LOCAL", "REGIONAL", "NATIONAL"
+  baseCharge  Float    // Fixed addition for shipping to this zone
+  gstPercent  Float    @default(18.0) // GST percentage
+  createdAt   DateTime @default(now())
+}
