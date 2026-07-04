@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "44371000000020001",
+      "name": "ShipSync",
+      "domain": {
+        "id": "50043129640",
+        "name": "shipsync-60073137349.development"
+      },
+      "timezone": "Asia/Kolkata",
+      "env": [
+        {
+          "idx": 1,
+          "id": "60073137349",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

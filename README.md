@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ShipSync | AI Courier Billing & Excel Automation SaaS
 
 **ShipSync** is a premium, state-of-the-art AI-powered logistics SaaS platform designed to automate courier billing audits, company consignment segregation, and slip OCR data extraction. Built on a high-fidelity glassmorphic design system, it provides dual dark/light layouts, interactive dashboards, editable OCR scan previews, fuzzy string mergers, and a dynamic weight slabs rate card manager.
@@ -112,3 +113,6 @@ ShipSync focuses heavily on aesthetic value:
 *   **Interactive stats widgets** with micro-animations on hover.
 *   **Pre-loaded Slip OCR testing**: In case you do not have a cargo receipt image on hand, the uploader features a **"Pre-load Sample Slip"** button which instantly simulates the OCR regex extraction pipeline on your 350g Tamil Nadu rate card!
 *   **Fuzzy Merger Console**: Allows manual merging of similar company names, automatically moving all database rows under the parent name and writing a permanent search alias.
+=======
+# ShipSync
+>>>>>>> e46fdca5f7b4acabe1306249b1ef51f3a180f3d1
